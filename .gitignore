@@ -4,3 +4,6 @@ dist/
 .env.local
 build/
 *.js.map
+
+# coverage reports
+coverage/
