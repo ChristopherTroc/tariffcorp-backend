@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Product {
+  id              String           @id
+  name            String
+  type            String
+  importCode      String           @map("import_code")
+  countryOfOrigin String           @map("country_of_origin")
+  value           Float
+  weight          Float
+  unit            String
+  transactions    Transaction[]
+  checkerFindings CheckerFinding[]
+
+  @@map("products")
+}
+
+model Transaction {
+  id              String          @id
+  date            DateTime
+  importer        String
+  broker          String
+  portOfEntry     String          @map("port_of_entry")
+  importCode      String          @map("import_code")
+  countryOfOrigin String          @map("country_of_origin")
+  units           Int
+  unitValue       Float           @map("unit_value")
+  totalValue      Float           @map("total_value")
+  dutyDeclared    Float           @map("duty_declared")
+  productId       String?         @map("product_id")
+  product         Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  checkerFinding  CheckerFinding?
+
+  @@map("transactions")
+}
+
+model CheckerFinding {
+  id            String      @id @default(uuid())
+  dutyComputed  Float       @map("duty_computed")
+  exposure      Float
+  ruleId        String?     @map("rule_id")
+  ruleName      String?     @map("rule_name")
+  transactionId String      @unique @map("transaction_id")
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  productId     String?     @map("product_id")
+  product       Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([exposure(sort: Desc)])
+  @@map("checker_findings")
+}
