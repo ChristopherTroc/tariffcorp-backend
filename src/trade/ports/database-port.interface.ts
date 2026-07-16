@@ -122,7 +122,10 @@ export interface IDatabasePort {
     filters?: ProductFilters,
   ): Promise<PaginatedResult<ProductWithCount>>;
   getProductById(id: string): Promise<ProductDetail | null>;
-  updateProduct(id: string, data: Partial<ProductRecord>): Promise<ProductRecord>;
+  updateProduct(
+    id: string,
+    data: Partial<ProductRecord>,
+  ): Promise<ProductRecord>;
 
   // Transactions
   getAllTransactions(

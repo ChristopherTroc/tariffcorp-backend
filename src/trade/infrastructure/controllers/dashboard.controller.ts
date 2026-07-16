@@ -1,14 +1,15 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import type { IDatabasePort, DashboardStats } from '../../ports/database-port.interface';
+import type {
+  IDatabasePort,
+  DashboardStats,
+} from '../../ports/database-port.interface';
 import { DATABASE_PORT } from '../../ports/database-port.interface';
 
 @ApiTags('dashboard')
 @Controller('dashboard')
 export class DashboardController {
-  constructor(
-    @Inject(DATABASE_PORT) private readonly db: IDatabasePort,
-  ) {}
+  constructor(@Inject(DATABASE_PORT) private readonly db: IDatabasePort) {}
 
   @Get('stats')
   @ApiOperation({

@@ -1,5 +1,9 @@
 import { FindingsController } from './findings.controller';
-import type { IDatabasePort, PaginatedResult, FindingRecord } from '../../ports/database-port.interface';
+import type {
+  IDatabasePort,
+  PaginatedResult,
+  FindingRecord,
+} from '../../ports/database-port.interface';
 
 describe('FindingsController', () => {
   const page: PaginatedResult<FindingRecord> = {
@@ -17,9 +21,8 @@ describe('FindingsController', () => {
     meta: { total: 1, page: 1, per_page: 50, total_pages: 1 },
   };
 
-  const db = {
-    getFindings: jest.fn().mockResolvedValue(page),
-  } as unknown as IDatabasePort;
+  const getFindings = jest.fn().mockResolvedValue(page);
+  const db = { getFindings } as unknown as IDatabasePort;
 
   let controller: FindingsController;
 
@@ -29,9 +32,9 @@ describe('FindingsController', () => {
   });
 
   it('lists findings with pagination query', async () => {
-    await expect(
-      controller.list({ page: 2, per_page: 10 }),
-    ).resolves.toEqual(page);
-    expect(db.getFindings).toHaveBeenCalledWith({ page: 2, per_page: 10 });
+    await expect(controller.list({ page: 2, per_page: 10 })).resolves.toEqual(
+      page,
+    );
+    expect(getFindings).toHaveBeenCalledWith({ page: 2, per_page: 10 });
   });
 });

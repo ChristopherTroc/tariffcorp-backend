@@ -32,9 +32,11 @@ describe('TransactionsController', () => {
     finding: null,
   };
 
+  const getAllTransactions = jest.fn().mockResolvedValue(listResult);
+  const getTransactionById = jest.fn();
   const db = {
-    getAllTransactions: jest.fn().mockResolvedValue(listResult),
-    getTransactionById: jest.fn(),
+    getAllTransactions,
+    getTransactionById,
   } as unknown as IDatabasePort;
 
   let controller: TransactionsController;
@@ -55,7 +57,7 @@ describe('TransactionsController', () => {
       }),
     ).resolves.toEqual(listResult);
 
-    expect(db.getAllTransactions).toHaveBeenCalledWith({
+    expect(getAllTransactions).toHaveBeenCalledWith({
       page: 1,
       per_page: 10,
       status: 'unmatched',
@@ -65,12 +67,12 @@ describe('TransactionsController', () => {
   });
 
   it('returns transaction detail when found', async () => {
-    (db.getTransactionById as jest.Mock).mockResolvedValue(detail);
+    getTransactionById.mockResolvedValue(detail);
     await expect(controller.getOne('TX-1')).resolves.toEqual({ data: detail });
   });
 
   it('throws NotFoundException when missing', async () => {
-    (db.getTransactionById as jest.Mock).mockResolvedValue(null);
+    getTransactionById.mockResolvedValue(null);
     await expect(controller.getOne('TX-MISSING')).rejects.toBeInstanceOf(
       NotFoundException,
     );

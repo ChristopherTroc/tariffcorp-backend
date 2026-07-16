@@ -1,5 +1,8 @@
 import { DashboardController } from './dashboard.controller';
-import type { IDatabasePort, DashboardStats } from '../../ports/database-port.interface';
+import type {
+  IDatabasePort,
+  DashboardStats,
+} from '../../ports/database-port.interface';
 
 describe('DashboardController', () => {
   const stats: DashboardStats = {
@@ -11,9 +14,8 @@ describe('DashboardController', () => {
     topOffenders: { byBroker: [], byPort: [], byProduct: [] },
   };
 
-  const db = {
-    getDashboardStats: jest.fn().mockResolvedValue(stats),
-  } as unknown as IDatabasePort;
+  const getDashboardStats = jest.fn().mockResolvedValue(stats);
+  const db = { getDashboardStats } as unknown as IDatabasePort;
 
   let controller: DashboardController;
 
@@ -24,6 +26,6 @@ describe('DashboardController', () => {
 
   it('returns dashboard stats wrapped in data', async () => {
     await expect(controller.getStats()).resolves.toEqual({ data: stats });
-    expect(db.getDashboardStats).toHaveBeenCalledTimes(1);
+    expect(getDashboardStats).toHaveBeenCalledTimes(1);
   });
 });

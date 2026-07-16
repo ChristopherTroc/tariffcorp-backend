@@ -8,8 +8,20 @@ import {
   Inject,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
-import type { IDatabasePort, PaginatedResult, ProductWithCount, ProductRecord, ProductDetail } from '../../ports/database-port.interface';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiNotFoundResponse,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
+import type {
+  IDatabasePort,
+  PaginatedResult,
+  ProductWithCount,
+  ProductRecord,
+  ProductDetail,
+} from '../../ports/database-port.interface';
 import { DATABASE_PORT } from '../../ports/database-port.interface';
 import type { ICheckerPort } from '../../ports/checker-port.interface';
 import { CHECKER_PORT } from '../../ports/checker-port.interface';
@@ -27,7 +39,8 @@ export class ProductsController {
   @Get()
   @ApiOperation({
     summary: 'List all products',
-    description: 'Paginated product catalog. Each item includes openFindingsCount. Filter by type or has_findings.',
+    description:
+      'Paginated product catalog. Each item includes openFindingsCount. Filter by type or has_findings.',
   })
   @ApiOkResponse({ description: 'Paginated product list with findings count' })
   async list(
@@ -44,13 +57,14 @@ export class ProductsController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get product detail',
-    description: 'Returns the product with all linked transactions and active checker findings.',
+    description:
+      'Returns the product with all linked transactions and active checker findings.',
   })
-  @ApiOkResponse({ description: 'Product detail with transactions and findings' })
+  @ApiOkResponse({
+    description: 'Product detail with transactions and findings',
+  })
   @ApiNotFoundResponse({ description: 'Product not found' })
-  async getOne(
-    @Param('id') id: string,
-  ): Promise<{ data: ProductDetail }> {
+  async getOne(@Param('id') id: string): Promise<{ data: ProductDetail }> {
     const detail = await this.db.getProductById(id);
     if (!detail) {
       throw new NotFoundException(`Product ${id} not found`);

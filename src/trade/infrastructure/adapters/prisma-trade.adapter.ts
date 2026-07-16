@@ -170,7 +170,8 @@ export class PrismaTradeAdapter implements IDatabasePort {
     if (status === 'matched') where['productId'] = { not: null };
     if (status === 'unmatched') where['productId'] = null;
     if (broker) where['broker'] = { contains: broker, mode: 'insensitive' };
-    if (port_of_entry) where['portOfEntry'] = { contains: port_of_entry, mode: 'insensitive' };
+    if (port_of_entry)
+      where['portOfEntry'] = { contains: port_of_entry, mode: 'insensitive' };
 
     const [items, total] = await Promise.all([
       this.prisma.transaction.findMany({
@@ -326,32 +327,17 @@ export class PrismaTradeAdapter implements IDatabasePort {
   // ── Dashboard ────────────────────────────────────────────────────────────────
 
   async getDashboardStats(): Promise<DashboardStats> {
-    const [
-      findingAggregates,
-      txAggregates,
-      unmatchedCount,
-      openFindingsCount,
-      brokerGroups,
-      portGroups,
-    ] = await Promise.all([
-      this.prisma.checkerFinding.aggregate({
-        _sum: { exposure: true, dutyComputed: true },
-      }),
-      this.prisma.transaction.aggregate({
-        _sum: { dutyDeclared: true },
-      }),
-      this.prisma.transaction.count({ where: { productId: null } }),
-      this.prisma.checkerFinding.count(),
-      // Top 5 brokers by total exposure — via raw groupBy on transactions join
-      this.prisma.checkerFinding.groupBy({
-        by: ['transactionId'],
-        _sum: { exposure: true },
-      }),
-      this.prisma.checkerFinding.groupBy({
-        by: ['transactionId'],
-        _sum: { exposure: true },
-      }),
-    ]);
+    const [findingAggregates, txAggregates, unmatchedCount, openFindingsCount] =
+      await Promise.all([
+        this.prisma.checkerFinding.aggregate({
+          _sum: { exposure: true, dutyComputed: true },
+        }),
+        this.prisma.transaction.aggregate({
+          _sum: { dutyDeclared: true },
+        }),
+        this.prisma.transaction.count({ where: { productId: null } }),
+        this.prisma.checkerFinding.count(),
+      ]);
 
     // For broker/port top-5 we need to join through transactions.
     // Prisma groupBy doesn't support join grouping, so we pull the data in two steps.

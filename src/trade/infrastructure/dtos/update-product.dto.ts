@@ -1,10 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsNumber,
-  IsEnum,
-  Min,
-} from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEnum, Min } from 'class-validator';
 
 export enum ProductType {
   Electronics = 'electronics',

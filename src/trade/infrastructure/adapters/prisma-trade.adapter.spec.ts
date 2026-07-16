@@ -57,7 +57,6 @@ describe('PrismaTradeAdapter', () => {
       count: jest.Mock;
       upsert: jest.Mock;
       aggregate: jest.Mock;
-      groupBy: jest.Mock;
     };
   };
   let adapter: PrismaTradeAdapter;
@@ -81,7 +80,6 @@ describe('PrismaTradeAdapter', () => {
         count: jest.fn(),
         upsert: jest.fn(),
         aggregate: jest.fn(),
-        groupBy: jest.fn(),
       },
     };
     adapter = new PrismaTradeAdapter(prisma as unknown as PrismaService);
@@ -268,7 +266,6 @@ describe('PrismaTradeAdapter', () => {
       });
       prisma.transaction.count.mockResolvedValue(2);
       prisma.checkerFinding.count.mockResolvedValue(5);
-      prisma.checkerFinding.groupBy.mockResolvedValue([]);
       prisma.checkerFinding.findMany.mockResolvedValue([
         {
           exposure: 150,
@@ -317,7 +314,6 @@ describe('PrismaTradeAdapter', () => {
       });
       prisma.transaction.count.mockResolvedValue(0);
       prisma.checkerFinding.count.mockResolvedValue(0);
-      prisma.checkerFinding.groupBy.mockResolvedValue([]);
       prisma.checkerFinding.findMany.mockResolvedValue([]);
 
       const stats = await adapter.getDashboardStats();

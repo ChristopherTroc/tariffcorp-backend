@@ -3,7 +3,8 @@ import { ListProductsDto } from './list-products.dto';
 
 describe('ListProductsDto has_findings transform', () => {
   function transform(value: unknown) {
-    return plainToInstance(ListProductsDto, { has_findings: value }).has_findings;
+    return plainToInstance(ListProductsDto, { has_findings: value })
+      .has_findings;
   }
 
   it('coerces string "true" and boolean true', () => {

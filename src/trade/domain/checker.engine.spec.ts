@@ -1,7 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { CheckerEngine } from './checker.engine';
 import { IDatabasePort } from '../ports/database-port.interface';
-import { TransactionRecord, ProductRecord } from '../ports/database-port.interface';
+import {
+  TransactionRecord,
+  ProductRecord,
+} from '../ports/database-port.interface';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,10 +72,7 @@ describe('CheckerEngine.evaluate()', () => {
     });
 
     it('does NOT fire for VN origin', () => {
-      const result = engine.evaluate(
-        makeTx({ countryOfOrigin: 'VN' }),
-        null,
-      );
+      const result = engine.evaluate(makeTx({ countryOfOrigin: 'VN' }), null);
       expect(result.ruleId).toBeNull();
       expect(result.dutyComputed).toBe(0);
     });
@@ -83,7 +83,12 @@ describe('CheckerEngine.evaluate()', () => {
   describe('R2 — Russia high-volume surcharge', () => {
     it('fires for RU + 15 units + unit_value $50 → duty = $37.50', () => {
       const result = engine.evaluate(
-        makeTx({ countryOfOrigin: 'RU', units: 15, unitValue: 50, totalValue: 750 }),
+        makeTx({
+          countryOfOrigin: 'RU',
+          units: 15,
+          unitValue: 50,
+          totalValue: 750,
+        }),
         null,
       );
       expect(result.ruleId).toBe('R2');
@@ -92,7 +97,12 @@ describe('CheckerEngine.evaluate()', () => {
 
     it('fires for RU + exactly 10 units + unit_value $50 → duty = $25', () => {
       const result = engine.evaluate(
-        makeTx({ countryOfOrigin: 'RU', units: 10, unitValue: 50, totalValue: 500 }),
+        makeTx({
+          countryOfOrigin: 'RU',
+          units: 10,
+          unitValue: 50,
+          totalValue: 500,
+        }),
         null,
       );
       expect(result.ruleId).toBe('R2');
@@ -101,7 +111,12 @@ describe('CheckerEngine.evaluate()', () => {
 
     it('does NOT fire for RU + 9 units (below threshold)', () => {
       const result = engine.evaluate(
-        makeTx({ countryOfOrigin: 'RU', units: 9, unitValue: 50, totalValue: 450 }),
+        makeTx({
+          countryOfOrigin: 'RU',
+          units: 9,
+          unitValue: 50,
+          totalValue: 450,
+        }),
         null,
       );
       expect(result.ruleId).toBeNull();
@@ -252,7 +267,11 @@ describe('CheckerEngine.runForTransactionId / runForProduct', () => {
 
   it('evaluates and upserts a finding for a transaction', async () => {
     getTransactionById.mockResolvedValue({
-      transaction: makeTx({ id: 'TX-1', countryOfOrigin: 'CN', dutyDeclared: 0 }),
+      transaction: makeTx({
+        id: 'TX-1',
+        countryOfOrigin: 'CN',
+        dutyDeclared: 0,
+      }),
       product: null,
       finding: null,
     });
@@ -280,11 +299,13 @@ describe('CheckerEngine.runForTransactionId / runForProduct', () => {
       makeTx({ id: 'TX-1' }),
       makeTx({ id: 'TX-2' }),
     ]);
-    getTransactionById.mockImplementation(async (id: string) => ({
-      transaction: makeTx({ id, countryOfOrigin: 'CN' }),
-      product: null,
-      finding: null,
-    }));
+    getTransactionById.mockImplementation((id: string) =>
+      Promise.resolve({
+        transaction: makeTx({ id, countryOfOrigin: 'CN' }),
+        product: null,
+        finding: null,
+      }),
+    );
 
     await engine.runForProduct('P-1');
     expect(getTransactionsForProduct).toHaveBeenCalledWith('P-1');

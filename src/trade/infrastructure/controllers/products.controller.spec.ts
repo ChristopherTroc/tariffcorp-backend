@@ -32,15 +32,18 @@ describe('ProductsController', () => {
     findings: [],
   };
 
+  const getAllProducts = jest.fn().mockResolvedValue(listResult);
+  const getProductById = jest.fn();
+  const updateProduct = jest.fn().mockResolvedValue(product);
+  const runForProduct = jest.fn().mockResolvedValue(undefined);
+
   const db = {
-    getAllProducts: jest.fn().mockResolvedValue(listResult),
-    getProductById: jest.fn(),
-    updateProduct: jest.fn().mockResolvedValue(product),
+    getAllProducts,
+    getProductById,
+    updateProduct,
   } as unknown as IDatabasePort;
 
-  const checker = {
-    runForProduct: jest.fn().mockResolvedValue(undefined),
-  } as unknown as ICheckerPort;
+  const checker = { runForProduct } as unknown as ICheckerPort;
 
   let controller: ProductsController;
 
@@ -59,7 +62,7 @@ describe('ProductsController', () => {
       }),
     ).resolves.toEqual(listResult);
 
-    expect(db.getAllProducts).toHaveBeenCalledWith({
+    expect(getAllProducts).toHaveBeenCalledWith({
       page: 1,
       per_page: 10,
       type: 'electronics',
@@ -68,19 +71,19 @@ describe('ProductsController', () => {
   });
 
   it('returns product detail when found', async () => {
-    (db.getProductById as jest.Mock).mockResolvedValue(detail);
+    getProductById.mockResolvedValue(detail);
     await expect(controller.getOne('P-1')).resolves.toEqual({ data: detail });
   });
 
   it('throws NotFoundException for missing product', async () => {
-    (db.getProductById as jest.Mock).mockResolvedValue(null);
+    getProductById.mockResolvedValue(null);
     await expect(controller.getOne('P-X')).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
 
   it('updates product and re-runs checker', async () => {
-    (db.getProductById as jest.Mock).mockResolvedValue(detail);
+    getProductById.mockResolvedValue(detail);
     await expect(
       controller.update('P-1', {
         countryOfOrigin: 'TW',
@@ -88,7 +91,7 @@ describe('ProductsController', () => {
       }),
     ).resolves.toEqual({ data: product });
 
-    expect(db.updateProduct).toHaveBeenCalledWith('P-1', {
+    expect(updateProduct).toHaveBeenCalledWith('P-1', {
       importCode: undefined,
       countryOfOrigin: 'TW',
       type: undefined,
@@ -96,15 +99,15 @@ describe('ProductsController', () => {
       weight: undefined,
       unit: undefined,
     });
-    expect(checker.runForProduct).toHaveBeenCalledWith('P-1');
+    expect(runForProduct).toHaveBeenCalledWith('P-1');
   });
 
   it('throws NotFoundException on update when product missing', async () => {
-    (db.getProductById as jest.Mock).mockResolvedValue(null);
+    getProductById.mockResolvedValue(null);
     await expect(controller.update('P-X', {})).rejects.toBeInstanceOf(
       NotFoundException,
     );
-    expect(db.updateProduct).not.toHaveBeenCalled();
-    expect(checker.runForProduct).not.toHaveBeenCalled();
+    expect(updateProduct).not.toHaveBeenCalled();
+    expect(runForProduct).not.toHaveBeenCalled();
   });
 });
