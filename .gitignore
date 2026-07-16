@@ -7,3 +7,8 @@ build/
 
 # coverage reports
 coverage/
+
+# AI / local tooling (not part of the deliverable)
+.cursor/
+.kilo/
+openspec/

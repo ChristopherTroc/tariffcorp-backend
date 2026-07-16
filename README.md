@@ -156,17 +156,17 @@ The transaction pooler (pgbouncer) doesn't support Prisma's prepared statement p
 ## Tests
 
 ```bash
-# Unit tests (CheckerEngine — no DB required)
+# Unit tests (no DB required — Prisma mocked in adapter tests)
 npm test
 
 # Watch mode
 npm run test:watch
 
-# Coverage
+# Coverage (threshold: statements/lines/functions ≥ 80%)
 npm run test:cov
 ```
 
-17 unit tests cover all rule branches, boundary conditions (R2 threshold at 9 vs. 10 units), negative cases, master-product override logic, and exposure sign correctness.
+Unit tests cover the CheckerEngine rule branches, Nest controllers (with mocked ports), PrismaTradeAdapter (mocked Prisma client), and DTO transforms.
 
 ---
 
@@ -179,15 +179,6 @@ npm run test:cov
 
 ---
 
-## AI Usage
+## Notes
 
-Scaffolding, boilerplate, and the majority of implementation were generated with AI assistance (Kilo / Claude).
-
-Files with significant AI contribution:
-- `prisma/schema.prisma` — generated from spec, verified against challenge requirements
-- `src/trade/domain/checker.engine.ts` — rule logic reviewed and validated against all 3 rule definitions in the challenge PDF
-- `src/trade/infrastructure/adapters/prisma-trade.adapter.ts` — Prisma query patterns generated, dashboard aggregation logic reviewed for correctness
-- `src/trade/domain/checker.engine.spec.ts` — all 17 test cases authored to match challenge spec; each case was manually traced against the rule definitions
-- `prisma/seed.ts` — path resolution and batch insert strategy required manual debugging to resolve pgbouncer compatibility
-
-All AI-generated code was reviewed for correctness against the challenge spec. The rule engine logic (countries, thresholds, formulas) was cross-checked line by line against the challenge PDF before acceptance.
+Planning and change workflow used OpenSpec.

@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { CheckerEngine } from './checker.engine';
 import { IDatabasePort } from '../ports/database-port.interface';
 import { TransactionRecord, ProductRecord } from '../ports/database-port.interface';
@@ -228,5 +229,65 @@ describe('CheckerEngine.evaluate()', () => {
       expect(result.dutyComputed).toBe(0);
       expect(result.exposure).toBeCloseTo(-50); // 0 - 50
     });
+  });
+});
+
+describe('CheckerEngine.runForTransactionId / runForProduct', () => {
+  const upsertFinding = jest.fn().mockResolvedValue(undefined);
+  const getTransactionById = jest.fn();
+  const getTransactionsForProduct = jest.fn();
+
+  const db = {
+    upsertFinding,
+    getTransactionById,
+    getTransactionsForProduct,
+  } as unknown as IDatabasePort;
+
+  let engine: CheckerEngine;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    engine = new CheckerEngine(db);
+  });
+
+  it('evaluates and upserts a finding for a transaction', async () => {
+    getTransactionById.mockResolvedValue({
+      transaction: makeTx({ id: 'TX-1', countryOfOrigin: 'CN', dutyDeclared: 0 }),
+      product: null,
+      finding: null,
+    });
+
+    await engine.runForTransactionId('TX-1');
+    expect(upsertFinding).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transactionId: 'TX-1',
+        ruleId: 'R1',
+        dutyComputed: 100,
+        exposure: 100,
+      }),
+    );
+  });
+
+  it('throws NotFoundException when transaction is missing', async () => {
+    getTransactionById.mockResolvedValue(null);
+    await expect(engine.runForTransactionId('TX-X')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('re-runs checker for every linked transaction', async () => {
+    getTransactionsForProduct.mockResolvedValue([
+      makeTx({ id: 'TX-1' }),
+      makeTx({ id: 'TX-2' }),
+    ]);
+    getTransactionById.mockImplementation(async (id: string) => ({
+      transaction: makeTx({ id, countryOfOrigin: 'CN' }),
+      product: null,
+      finding: null,
+    }));
+
+    await engine.runForProduct('P-1');
+    expect(getTransactionsForProduct).toHaveBeenCalledWith('P-1');
+    expect(upsertFinding).toHaveBeenCalledTimes(2);
   });
 });
